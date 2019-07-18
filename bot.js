@@ -1,44 +1,41 @@
-console.log('The bot is starting!');
-var config = require('./config');
 var Twit = require('twit')
 
+
+
 var T = new Twit({
-    consumer_key: config.ck,
-    consumer_secret: config.cs,
-    access_token: config.at,
-    access_token_secret: config.ats
-});
+    consumer_key: 'dQiM3LFfBH9WL0fFqZ9UW4LRA',
+    consumer_secret: 'TspJLkheHlm89vt3dLkVXaitMVFj2iSYNBfm07mQIQfmwubMz4',
+    access_token: '1119352323178926081-yVuRyRZDFFQNEeuYFKaLrNUxY9eSEX',
+    access_token_secret: 'QVHkfbpnd3wAGcGy1ZMnk19NU3emTgBV3bLDPTh3nFRh6',
+    timeout_ms: 60 * 1000,  // optional HTTP request timeout to apply to all requests.
+    strictSSL: true,     // optional - requires SSL certificates to be valid.
+})
 
-var stream = T.stream('user');
-stream.on('follow', followed);
+//
+//  tweet 'hello world!'
+//
+
+/*T.post('statuses/update', { status: 'hello world!' }, function (err, data, response) {
+    console.log(data)
+})*/
+
+T.get('search/tweets', { q: 'xptr123 since:2018-07-11', count: 100 }, function (err, data, response) {
+    console.log(data)
+    //console.log(response)
+})
 
 
-//tweetIt()
-//setInterval(tweetIt, 1000 * 20 * 60);
 
-function tweetIt(txt) {
-
-    var r = Math.floor(Math.random() * 100);
-    var tweet = {
-        status: txt
+T.post('statuses/update', {
+    status: '@Everelindo Teste!',
+    in_reply_to_status_id: '1151663004326539265'
+}, function (err, data, response) {
+    if (err) {
+        console.log(err)
+    } else {
+        console.log(data.text + ' tweeted!')
     }
-
-    function tweeted(err, data, response) {
-
-        console.log(data)
-    }
-
-    T.post('statuses/update', tweet, tweeted);
-}
-
-function followed(eventMsg){
-
-    var name = event.source.name;
-    var screenname = eventMsg.source.screen_name
-
-    tweetIt('@'+screenname + ' do you like rainbows?');
-}
-
+})
 
 
 
