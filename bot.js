@@ -2,8 +2,6 @@ const Twit = require('twit')
 const express = require('express')
 const app = express()
 
-
-
 const bot = new Twit({
     consumer_key: 'dQiM3LFfBH9WL0fFqZ9UW4LRA',
     consumer_secret: 'TspJLkheHlm89vt3dLkVXaitMVFj2iSYNBfm07mQIQfmwubMz4',
@@ -14,35 +12,32 @@ const bot = new Twit({
 })
 
 
-let jsonData
-
-const tweetsList = []
+let jsonData = null;
 
 function answerTweet(tweet) {
     const answer = {
-        status: 'Olá @' + 'DoggoTheBot',
-        in_reply_to_status_id: '' + '1217989043377582080'
+        status: 'Oi @' + tweet.user.screen_name,
+        in_reply_to_status_id: '' + tweet.id_str
     }
-
-    bot.post('statuses/update', answer, (err, data, response) => console.log(err))
+    bot.post('statuses/update', answer, (err, data, response) => console.log(data))
 }
 
 
-/*async function searchTweet() {
-     bot.get('search/tweets', { q: 'oieusouogoku since:2011-07-11', count: 1 }, function (err, data, response) {
-        const { statuses } = data
+async function searchTweet() {
+    try {
+        const result = await bot.get('search/tweets', { q: 'aquepenaseria since:2011-07-11', count: 3 })
+        const { data } = result
+        const tweetsList = data.statuses
+        jsonData = tweetsList[0]
+        answerTweet(jsonData)
+    } catch (e) {
+        console.error(e)
+    }
+}
 
-        jsonData = statuses.map(tweet => tweetsList.push(tweet))
-        jsonData = statuses;
-    })
-}*/
-
-
-
-//answerTweet('a')
-
+searchTweet()
 app.get('/data', (req, res) => {
-    return res.json(tweetsList)
+    return res.json(jsonData)
 })
 
 app.listen(3333);
@@ -50,20 +45,6 @@ app.listen(3333);
 
 
 
-
-
-
-
-/*bot.post('statuses/update', {
-    status: '@Everelindo Teste!',
-    in_reply_to_status_id: '1151663004326539265'
-}, function (err, data, response) {
-    if (err) {
-        console.log(err)
-    } else {
-        console.log(data.text + ' tweeted!')
-    }
-})*/
 
 
 
