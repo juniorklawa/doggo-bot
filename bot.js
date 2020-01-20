@@ -12,33 +12,55 @@ const bot = new Twit({
 })
 
 
-let jsonData = null;
+let tweetsList = [];
 
-function answerTweet(tweet) {
-    const answer = {
-        status: 'Oi @' + tweet.user.screen_name,
-        in_reply_to_status_id: '' + tweet.id_str
-    }
-    bot.post('statuses/update', answer, (err, data, response) => console.log(data))
-}
-
-
-async function searchTweet() {
+async function answerTweet(tweetsList) {
     try {
-        const result = await bot.get('search/tweets', { q: 'aquepenaseria since:2011-07-11', count: 3 })
-        const { data } = result
-        const tweetsList = data.statuses
-        jsonData = tweetsList[0]
-        answerTweet(jsonData)
+
+        await tweetsList.map((tweet) => {
+            const answer = {
+                status: ':) @' + tweet.user.screen_name,
+                in_reply_to_status_id: '' + tweet.id_str
+            }
+            //bot.post('statuses/update', answer, (err, data, response) => console.log(data))
+        })
+
     } catch (e) {
         console.error(e)
     }
+    console.log('answering tweets...')
 }
 
-searchTweet()
-app.get('/data', (req, res) => {
-    return res.json(jsonData)
+//@TODO Upload images
+//@TODO Use moment for search query date
+//@TODO Search more about query q params
+async function searchTweet() {
+    try {
+        const result = await bot.get('search/tweets', { q: 'quero adotar um cachorro  since:2011-07-11', count: 5 })
+        const { data } = result
+        const tweetsData = data.statuses
+        tweetsList = tweetsData
+    } catch (e) {
+        console.error(e)
+    }
+    console.log('searching tweets...')
+}
+
+main()
+//searchTweet()
+app.get('/tweets', (req, res) => {
+    return res.json(tweetsList)
 })
+
+async function main() {
+    try {
+        await searchTweet()
+        await answerTweet(tweetsList)
+    } catch (e) {
+        console.error(e)
+    }
+
+}
 
 app.listen(3333);
 
