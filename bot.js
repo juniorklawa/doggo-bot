@@ -1,17 +1,21 @@
 const Twit = require('twit')
 const express = require('express')
 const fs = require('fs')
-const config = require('./config.js').default
+const config = require('./config.js')
 const download = require('image-downloader')
 const axios = require('axios')
+const moment = require('moment')
 const app = express()
+
+//@TODO filter tweet array by word cachorro and pt-br language
+//@TODO Use moment for search query date
+//@TODO Train model to indentify puppies
+//@TODO Delete images after it has been used
 
 
 const bot = new Twit(config)
 
 let tweetsList = [];
-
-
 
 async function getRandomImg() {
     const randomImage = await axios.get('https://dog.ceo/api/breeds/image/random')
@@ -34,16 +38,45 @@ async function downloadImg() {
     }
 }
 
-async function answerTweet(tweetsList) {
+async function answerTweets(tweetsList) {
     try {
-
+        const imagePath = `./${await downloadImg()}`
+        const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
         await tweetsList.map((tweet) => {
             const { user, id_str } = tweet
+
             const answer = {
                 status: ':) @' + user.screen_name,
                 in_reply_to_status_id: '' + id_str
             }
-            //bot.post('statuses/update', answer, (err, data, response) => console.log(data))
+
+            bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
+                if (err) {
+                    console.log('ERROR:');
+                    console.log(err);
+                }
+                else {
+                    console.log('Image uploaded!');
+                    console.log('Now tweeting it...');
+
+                    bot.post('statuses/update', {
+                        
+                        answer: answer,
+                        media_ids: new Array(data.media_id_string)
+                    },
+                        function (err, data, response) {
+                            if (err) {
+                                console.log('ERROR:');
+                                console.log(err);
+                            }
+                            else {
+                                console.log('Posted an image!');
+                            }
+                        }
+                    );
+                }
+            });
+
         })
 
     } catch (e) {
@@ -52,46 +85,6 @@ async function answerTweet(tweetsList) {
     console.log('answering tweets...')
 }
 
-async function genericTweet() {
-    const imagePath = `./${await downloadImg()}`
-    const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
-
-    /*bot.post('statuses/update', { status: 'Tweet aleatório!' }, function (err, data, response) {
-        console.log(data)
-    });*/
-
-    bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
-        if (err) {
-            console.log('ERROR:');
-            console.log(err);
-        }
-        else {
-            console.log('Image uploaded!');
-            console.log('Now tweeting it...');
-
-            bot.post('statuses/update', {
-                status: 'Cachorro fofo',
-                media_ids: new Array(data.media_id_string)
-            },
-                function (err, data, response) {
-                    if (err) {
-                        console.log('ERROR:');
-                        console.log(err);
-                    }
-                    else {
-                        console.log('Posted an image!');
-                    }
-                }
-            );
-        }
-    });
-}
-//@TODO filter tweet array by word cachorro and pt-br language
-//@TODO delete git commit history
-//@TODO Use moment for search query date
-//@TODO Search more about query q params
-//@TODO Train model to indentify puppies
-//@TODO Delete images after it has been used
 
 function getRandomQuote() {
     const sadQuotes = [
@@ -108,7 +101,10 @@ function getRandomQuote() {
 async function searchTweet() {
 
     try {
-        const result = await bot.get('search/tweets', { q: `${getRandomQuote()}  since:2020-02-03`, count: 5, locale: 'pt-br' })
+        const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
+        const today = moment().format('YYYY-MM-DD')
+
+        const result = await bot.get('search/tweets', { q: `${'achei que tinha perdido minha chave'}  since:${yesterday}`, count: 5, locale: 'pt-br' })
         const { data } = result
         const tweetsData = data.statuses
         tweetsList = tweetsData
@@ -122,7 +118,7 @@ async function searchTweet() {
 async function runBot() {
     try {
         await searchTweet()
-        // await answerTweet(tweetsList)
+        await answerTweets(tweetsList)
         // await genericTweet()
         // await downloadImg()
         // await genericTweet()
