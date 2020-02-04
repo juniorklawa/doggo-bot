@@ -109,7 +109,7 @@ async function runBot() {
     try {
         await searchTweet()
         await answerTweets(tweetsList)
-        //fsExtra.emptyDirSync('./img/')
+        //fs.emptyDirSync('./img/')
     } catch (e) {
         console.error(e)
     }
