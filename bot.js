@@ -1,6 +1,6 @@
 const Twit = require('twit')
 const express = require('express')
-const fs = require('fs')
+const fs = require('fs-extra')
 const config = require('./config.js')
 const download = require('image-downloader')
 const axios = require('axios')
@@ -9,7 +9,7 @@ const app = express()
 
 //@TODO filter tweet array by word cachorro and pt-br language
 //@TODO Use moment for search query date
-//@TODO Train model to indentify puppies
+//@TODO Train model to indentify puppies teachable machine with google
 //@TODO Delete images after it has been used
 
 
@@ -40,43 +40,25 @@ async function downloadImg() {
 
 async function answerTweets(tweetsList) {
     try {
+
+        //const imagePath = `./img/cutedog.jpg`
         const imagePath = `./${await downloadImg()}`
         const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
         await tweetsList.map((tweet) => {
             const { user, id_str } = tweet
-
-            const answer = {
-                status: ':) @' + user.screen_name,
-                in_reply_to_status_id: '' + id_str
-            }
-
             bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
-                if (err) {
-                    console.log('ERROR:');
-                    console.log(err);
-                }
-                else {
-                    console.log('Image uploaded!');
-                    console.log('Now tweeting it...');
+                const mediaIdStr = data.media_id_string
+                const altText = "A random dog picture"
+                const meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
+                bot.post('media/metadata/create', meta_params, function (err, data, response) {
+                    if (!err) {
+                        var params = { status: 'Não fique triste, Olha aqui uma foto de um cachorro pra te alegrar! @' + user.screen_name, media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str }
 
-                    bot.post('statuses/update', {
-                        
-                        answer: answer,
-                        media_ids: new Array(data.media_id_string)
-                    },
-                        function (err, data, response) {
-                            if (err) {
-                                console.log('ERROR:');
-                                console.log(err);
-                            }
-                            else {
-                                console.log('Posted an image!');
-                            }
-                        }
-                    );
-                }
-            });
-
+                        bot.post('statuses/update', params, function (err, data, response) {
+                        })
+                    }
+                })
+            })
         })
 
     } catch (e) {
@@ -98,13 +80,21 @@ function getRandomQuote() {
     return sadQuotes[Math.floor(Math.random() * sadQuotes.length)]
 }
 
+function getRandomAnswer() {
+    const happyAnswers = [
+        'Não fica triste!',
+        'Não fique assim assim!',
+        'Vai dar tudo certo!',
+    ]
+    return happyAnswers[Math.floor(Math.random() * happyAnswers.length)]
+}
+
 async function searchTweet() {
 
     try {
         const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
         const today = moment().format('YYYY-MM-DD')
-
-        const result = await bot.get('search/tweets', { q: `${'achei que tinha perdido minha chave'}  since:${yesterday}`, count: 5, locale: 'pt-br' })
+        const result = await bot.get('search/tweets', { q: `${'quase chorei mt bom parabéns'}  since:${yesterday}`, count: 1, locale: 'pt-br' })
         const { data } = result
         const tweetsData = data.statuses
         tweetsList = tweetsData
@@ -119,13 +109,10 @@ async function runBot() {
     try {
         await searchTweet()
         await answerTweets(tweetsList)
-        // await genericTweet()
-        // await downloadImg()
-        // await genericTweet()
+        //fsExtra.emptyDirSync('./img/')
     } catch (e) {
         console.error(e)
     }
-
 }
 
 runBot()
