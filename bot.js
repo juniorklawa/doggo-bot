@@ -108,8 +108,8 @@ async function searchTweet() {
 async function runBot() {
     try {
         await searchTweet()
-        await answerTweets(tweetsList)
-        //fs.emptyDirSync('./img/')
+        //await answerTweets(tweetsList)
+        fs.emptyDirSync('./img/')
     } catch (e) {
         console.error(e)
     }
