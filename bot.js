@@ -10,7 +10,7 @@ const app = express()
 //@TODO filter tweet array by word cachorro and pt-br language
 //@TODO Use moment for search query date
 //@TODO Train model to indentify puppies teachable machine with google
-//@TODO Delete images after it has been used
+
 
 
 const bot = new Twit(config)
