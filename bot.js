@@ -7,9 +7,11 @@ const axios = require('axios')
 const moment = require('moment')
 const app = express()
 
-//@TODO filter tweet array by word cachorro and pt-br language
-//@TODO Use moment for search query date
-//@TODO Train model to indentify puppies teachable machine with google
+//@TODO rename images folder, exclude equal images and host them in Cloudinary
+//@TODO filter tweet array by word NOT cachorro NOT RT and pt-br language
+//@TODO Use moment for search query date (24h range)
+
+
 
 
 const bot = new Twit(config)
@@ -103,11 +105,17 @@ async function searchTweet() {
 
 async function runBot() {
     try {
+<<<<<<< HEAD
         await getRandomImg()
         await downloadImg()
         //await searchTweet()
         //await answerTweets(tweetsList)
         //fs.emptyDirSync('./img/')
+=======
+        await searchTweet()
+        //await answerTweets(tweetsList)
+        fs.emptyDirSync('./img/')
+>>>>>>> 456906d12da0aa77343d6f50e7ef1fc2980781c2
     } catch (e) {
         console.error(e)
     }
