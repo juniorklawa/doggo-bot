@@ -40,25 +40,33 @@ async function downloadImg() {
 
 async function answerTweets(tweetsList) {
     try {
-        const imagePath = `./${await downloadImg()}`
-        const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
-        await tweetsList.map((tweet) => {
+        const filteredTweets = tweetsList.filter((tweet) =>)
+        await tweetsList.map(async (tweet) => {
+            const imagePath = `./${await downloadImg()}`
+            const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
             const { user, id_str } = tweet
-            bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
-                const mediaIdStr = data.media_id_string
-                const altText = "A random dog picture"
-                const meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
-                bot.post('media/metadata/create', meta_params, function (err, data, response) {
-                    if (!err) {
-                        var params = { status: 'Não fique triste, Olha aqui uma foto de um cachorro pra te alegrar! @' + user.screen_name, media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str }
+            const params = {
+                status: `@${user.screen_name} ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`,
+                //media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str
+            }
+            console.log(params)
 
-                        bot.post('statuses/update', params, function (err, data, response) {
-                        })
-                    }
-                })
-            })
+            // bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
+            //     const mediaIdStr = data.media_id_string
+            //     const altText = "A random dog picture"
+            //     const meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
+            //     bot.post('media/metadata/create', meta_params, function (err, data, response) {
+            //         if (!err) {
+            //             const params = { status: `@${user.screen_name} ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`, media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str }
+
+            //             bot.post('statuses/update', params, function (err, data, response) {
+            //             })
+            //         }
+            //     })
+            // })
+
         })
-
+        fs.emptyDirSync('./img/')
     } catch (e) {
         console.error(e)
     }
@@ -80,19 +88,18 @@ function getRandomQuote() {
 
 function getRandomAnswer() {
     const happyAnswers = [
-        'Não fica triste!',
-        'Não fique assim assim!',
-        'Vai dar tudo certo!',
+        'não fica triste!',
+        'não fique assim!',
+        'vai dar tudo certo!',
     ]
     return happyAnswers[Math.floor(Math.random() * happyAnswers.length)]
 }
 
 async function searchTweet() {
-
     try {
-        const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
+        //const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
         const today = moment().format('YYYY-MM-DD')
-        const result = await bot.get('search/tweets', { q: `${'quase chorei mt bom parabéns'}  since:${yesterday}`, count: 1, locale: 'pt-br' })
+        const result = await bot.get('search/tweets', { q: `${getRandomQuote()}  since:${today}`, count: 10, locale: 'pt-br' })
         const { data } = result
         const tweetsData = data.statuses
         tweetsList = tweetsData
@@ -105,17 +112,10 @@ async function searchTweet() {
 
 async function runBot() {
     try {
-<<<<<<< HEAD
         await getRandomImg()
         await downloadImg()
-        //await searchTweet()
-        //await answerTweets(tweetsList)
-        //fs.emptyDirSync('./img/')
-=======
         await searchTweet()
-        //await answerTweets(tweetsList)
-        fs.emptyDirSync('./img/')
->>>>>>> 456906d12da0aa77343d6f50e7ef1fc2980781c2
+        await answerTweets(tweetsList)
     } catch (e) {
         console.error(e)
     }
