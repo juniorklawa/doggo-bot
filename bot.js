@@ -19,10 +19,9 @@ const bot = new Twit(config)
 let tweetsList = [];
 
 async function getRandomImg() {
-    const randomImage = await axios.get('https://dog.ceo/api/breeds/image/random')
-    const { message } = randomImage.data
-
-    return message
+    const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
+    const randomNumber = Math.ceil(Math.random() * (99) + 1);
+    return `${url}${randomNumber}.jpg`
 }
 
 async function downloadImg() {
@@ -41,8 +40,6 @@ async function downloadImg() {
 
 async function answerTweets(tweetsList) {
     try {
-
-        //const imagePath = `./img/cutedog.jpg`
         const imagePath = `./${await downloadImg()}`
         const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
         await tweetsList.map((tweet) => {
@@ -108,9 +105,17 @@ async function searchTweet() {
 
 async function runBot() {
     try {
+<<<<<<< HEAD
+        await getRandomImg()
+        await downloadImg()
+        //await searchTweet()
+        //await answerTweets(tweetsList)
+        //fs.emptyDirSync('./img/')
+=======
         await searchTweet()
         //await answerTweets(tweetsList)
         fs.emptyDirSync('./img/')
+>>>>>>> 456906d12da0aa77343d6f50e7ef1fc2980781c2
     } catch (e) {
         console.error(e)
     }
