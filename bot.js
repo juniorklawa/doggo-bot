@@ -10,7 +10,6 @@ const app = express()
 //@TODO filter tweet array by word cachorro and pt-br language
 //@TODO Use moment for search query date
 //@TODO Train model to indentify puppies teachable machine with google
-//@TODO Delete images after it has been used
 
 
 const bot = new Twit(config)
@@ -18,10 +17,9 @@ const bot = new Twit(config)
 let tweetsList = [];
 
 async function getRandomImg() {
-    const randomImage = await axios.get('https://dog.ceo/api/breeds/image/random')
-    const { message } = randomImage.data
-
-    return message
+    const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
+    const randomNumber = Math.ceil(Math.random() * (99) + 1);
+    return `${url}${randomNumber}.jpg`
 }
 
 async function downloadImg() {
@@ -40,8 +38,6 @@ async function downloadImg() {
 
 async function answerTweets(tweetsList) {
     try {
-
-        //const imagePath = `./img/cutedog.jpg`
         const imagePath = `./${await downloadImg()}`
         const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
         await tweetsList.map((tweet) => {
@@ -107,8 +103,10 @@ async function searchTweet() {
 
 async function runBot() {
     try {
-        await searchTweet()
-        await answerTweets(tweetsList)
+        await getRandomImg()
+        await downloadImg()
+        //await searchTweet()
+        //await answerTweets(tweetsList)
         //fs.emptyDirSync('./img/')
     } catch (e) {
         console.error(e)
