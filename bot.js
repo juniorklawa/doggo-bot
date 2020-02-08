@@ -8,6 +8,8 @@ const app = express()
 
 //@TODO double tweet bug
 //@TODO decent structure
+//@TODO add node schedule
+//@TODO add tests
 
 const bot = new Twit(config)
 let jsonReturn = null
