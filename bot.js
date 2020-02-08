@@ -9,6 +9,7 @@ const app = express()
 //@TODO double tweet bug
 //@TODO decent structure
 //@TODO add node schedule
+//@TODO Make url a private source
 //@TODO add tests
 
 const bot = new Twit(config)
@@ -60,7 +61,7 @@ async function answerTweets(tweetsList) {
 
             bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
                 const mediaIdStr = data.media_id_string
-                const altText = "A random dog picture"
+                const altText = "A random puppy picture"
                 const meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
                 bot.post('media/metadata/create', meta_params, function (err, data, response) {
                     if (!err) {
@@ -68,6 +69,7 @@ async function answerTweets(tweetsList) {
 
                         bot.post('statuses/update', params, function (err, data, response) {
                         })
+                        console.log(`answering tweet with id: ${id_str}`)
                     }
                 })
             })
