@@ -3,24 +3,21 @@ const express = require('express')
 const fs = require('fs-extra')
 const config = require('./config.js')
 const download = require('image-downloader')
-const axios = require('axios')
 const moment = require('moment')
 const app = express()
 
-//@TODO rename images folder, exclude equal images and host them in Cloudinary
-//@TODO filter tweet array by word NOT cachorro NOT RT and pt-br language
-//@TODO Use moment for search query date (24h range)
-
-
-
+//@TODO double tweet bug
+//@TODO decent structure
+//@TODO add node schedule
+//@TODO add tests
 
 const bot = new Twit(config)
-
+let jsonReturn = null
 let tweetsList = [];
 
 async function getRandomImg() {
     const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
-    const randomNumber = Math.ceil(Math.random() * (99) + 1);
+    const randomNumber = Math.ceil(Math.random() * (299) + 1);
     return `${url}${randomNumber}.jpg`
 }
 
@@ -40,33 +37,43 @@ async function downloadImg() {
 
 async function answerTweets(tweetsList) {
     try {
-        const filteredTweets = tweetsList.filter((tweet) =>)
-        await tweetsList.map(async (tweet) => {
+        const filteredTweets = tweetsList.filter((tweet) => {
+            const { text, metadata } = tweet
+            return (
+                metadata.iso_language_code === 'pt' &&
+                (!text.includes('RT') &&
+                    !text.includes('cachorro') &&
+                    !text.includes('Cachorro'))
+            )
+        })
+
+        jsonReturn = filteredTweets
+        await filteredTweets.map(async (tweet) => {
             const imagePath = `./${await downloadImg()}`
             const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
             const { user, id_str } = tweet
             const params = {
-                status: `@${user.screen_name} ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`,
+                status: `@${user.screen_name} ${getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
                 //media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str
             }
-            console.log(params)
+            //console.log(params)
 
-            // bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
-            //     const mediaIdStr = data.media_id_string
-            //     const altText = "A random dog picture"
-            //     const meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
-            //     bot.post('media/metadata/create', meta_params, function (err, data, response) {
-            //         if (!err) {
-            //             const params = { status: `@${user.screen_name} ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`, media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str }
+            bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
+                const mediaIdStr = data.media_id_string
+                const altText = "A random dog picture"
+                const meta_params = { media_id: mediaIdStr, alt_text: { text: altText } }
+                bot.post('media/metadata/create', meta_params, function (err, data, response) {
+                    if (!err) {
+                        const params = { status: `@${user.screen_name} ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`, media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str }
 
-            //             bot.post('statuses/update', params, function (err, data, response) {
-            //             })
-            //         }
-            //     })
-            // })
+                        bot.post('statuses/update', params, function (err, data, response) {
+                        })
+                    }
+                })
+            })
 
         })
-        fs.emptyDirSync('./img/')
+
     } catch (e) {
         console.error(e)
     }
@@ -97,9 +104,14 @@ function getRandomAnswer() {
 
 async function searchTweet() {
     try {
-        //const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
+        const now = moment().format('YYYY-MM-DD')
+        console.log('now', now)
+        const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
+        console.log('yesterday', yesterday)
+        const randomQuote = getRandomQuote()
+        console.log(randomQuote)
         const today = moment().format('YYYY-MM-DD')
-        const result = await bot.get('search/tweets', { q: `${getRandomQuote()}  since:${today}`, count: 10, locale: 'pt-br' })
+        const result = await bot.get('search/tweets', { q: `${'to triste'}  since:${today}`, count: 10, })
         const { data } = result
         const tweetsData = data.statuses
         tweetsList = tweetsData
@@ -123,7 +135,7 @@ async function runBot() {
 
 runBot()
 app.get('/tweets', (req, res) => {
-    return res.json(tweetsList)
+    return res.json(jsonReturn)
 })
 
 
