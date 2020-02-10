@@ -2,6 +2,7 @@ const Twit = require('twit')
 const express = require('express')
 const fs = require('fs-extra')
 const config = require('./config.js')
+const cloudinaryConfig = require('./credentials/cloudinary.js')
 const download = require('image-downloader')
 const moment = require('moment')
 const app = express()
@@ -9,7 +10,6 @@ const app = express()
 //@TODO double tweet bug
 //@TODO decent structure
 //@TODO add node schedule
-//@TODO Make url a private source
 //@TODO add tests
 
 const bot = new Twit(config)
@@ -17,8 +17,9 @@ let jsonReturn = null
 let tweetsList = [];
 
 async function getRandomImg() {
-    const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
-    const randomNumber = Math.ceil(Math.random() * (299) + 1);
+    const url = cloudinaryConfig.url
+    const max = cloudinaryConfig.max_size
+    const randomNumber = Math.ceil(Math.random() * (max) + 1);
     return `${url}${randomNumber}.jpg`
 }
 
@@ -29,7 +30,6 @@ async function downloadImg() {
             dest: './img/'
         }
         const { filename, image } = await download.image(options)
-        console.log(filename) // => /path/to/dest/image.jpg
         return filename
     } catch (e) {
         console.error(e)
@@ -53,12 +53,6 @@ async function answerTweets(tweetsList) {
             const imagePath = `./${await downloadImg()}`
             const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
             const { user, id_str } = tweet
-            const params = {
-                status: `@${user.screen_name} ${getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
-                //media_ids: [mediaIdStr], in_reply_to_status_id: '' + id_str
-            }
-            //console.log(params)
-
             bot.post('media/upload', { media_data: b64content }, function (err, data, response) {
                 const mediaIdStr = data.media_id_string
                 const altText = "A random puppy picture"
@@ -79,7 +73,6 @@ async function answerTweets(tweetsList) {
     } catch (e) {
         console.error(e)
     }
-    console.log('answering tweets...')
 }
 
 
@@ -107,16 +100,15 @@ function getRandomAnswer() {
 async function searchTweet() {
     try {
         const now = moment().format('YYYY-MM-DD')
-        console.log('now', now)
-        const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
-        console.log('yesterday', yesterday)
+        //const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
         const randomQuote = getRandomQuote()
-        console.log(randomQuote)
         const today = moment().format('YYYY-MM-DD')
-        const result = await bot.get('search/tweets', { q: `${'to triste'}  since:${today}`, count: 10, })
+        const result = await bot.get('search/tweets', { q: `${randomQuote}  since:${today}`, count: 1, })
         const { data } = result
         const tweetsData = data.statuses
+        console.log(data)
         tweetsList = tweetsData
+        jsonReturn = tweetsList;
     } catch (e) {
         console.error(e)
     }
@@ -130,6 +122,7 @@ async function runBot() {
         await downloadImg()
         await searchTweet()
         await answerTweets(tweetsList)
+        fs.emptyDirSync('./img/')
     } catch (e) {
         console.error(e)
     }

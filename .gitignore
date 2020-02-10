@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 
 config.js
+credentials/config.js
+credentials/cloudinary.js
 
 # Runtime data
 pids
