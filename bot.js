@@ -11,6 +11,7 @@ const app = express();
 //@TODO decent structure
 //@TODO IBM Watson
 //@TODO add node schedule
+//@TODO create a separed method that filter tweets
 //@TODO add tests
 
 const bot = new Twit(config);
@@ -18,8 +19,8 @@ let jsonReturn = null;
 let tweetsList = [];
 
 async function getRandomImg() {
-  const url = cloudinaryConfig.url;
-  const max = cloudinaryConfig.max_size;
+  const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
+  const max = 404;
   const randomNumber = Math.ceil(Math.random() * max + 1);
   return `${url}${randomNumber}.jpg`;
 }
@@ -118,12 +119,12 @@ function getRandomAnswer() {
 async function searchTweet() {
   try {
     const now = moment().format("YYYY-MM-DD");
-    //const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
+    const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD')
     const randomQuote = getRandomQuote();
     const today = moment().format("YYYY-MM-DD");
     const result = await bot.get("search/tweets", {
-      q: `${randomQuote}  since:${today}`,
-      count: 1
+      q: `${'eu tô na bad'}  since:${yesterday}`,
+      count: 5
     });
     const { data } = result;
     const tweetsData = data.statuses;
@@ -142,7 +143,7 @@ async function runBot() {
     await downloadImg();
     await searchTweet();
     await answerTweets(tweetsList);
-    fs.emptyDirSync("./img/");
+    //fs.emptyDirSync("./img/");
   } catch (e) {
     console.error(e);
   }
