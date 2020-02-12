@@ -5,10 +5,18 @@ const config = require("./config.js");
 const download = require("image-downloader");
 const moment = require("moment");
 const app = express();
+const watsonApiKey = require('./credentials/watson-nlu.json').apikey
+const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
+const { IamAuthenticator } = require('ibm-watson/auth');
 
-//@TODO double tweet bug(?)
+const nlu = new NaturalLanguageUnderstandingV1({
+    authenticator: new IamAuthenticator({ apikey: watsonApiKey }),
+    version: '2018-04-05',
+    url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
+});
+
+
 //@TODO decent structure
-//@TODO IBM Watson
 //@TODO add node schedule
 //@TODO create a separed method that filter tweets
 //@TODO add tests
@@ -17,29 +25,37 @@ const bot = new Twit(config);
 let jsonReturn = null;
 let tweetsList = [];
 
-async function getRandomImg() {
-    const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
-    const max = 404;
-    const randomNumber = Math.ceil(Math.random() * max + 1);
-    return `${url}${randomNumber}.jpg`;
-}
 
-async function downloadImg() {
-    try {
-        const options = {
-            url: await getRandomImg(),
-            dest: "./img/"
-        };
-        const { filename, image } = await download.image(options);
-        return filename;
-    } catch (e) {
-        console.error(e);
+async function imgBot() {
+    async function getRandomImgURL() {
+        const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
+        const max = 404;
+        const randomNumber = Math.ceil(Math.random() * max + 1);
+
+        return `${url}${randomNumber}.jpg`;
     }
+
+    async function downloadImg() {
+        try {
+            const options = {
+                url: await getRandomImgURL(),
+                dest: "./img/"
+            };
+            const { filename, image } = await download.image(options);
+            return filename;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    return downloadImg();
 }
 
-async function answerTweets(tweetsList) {
-    try {
-        const filteredTweets = tweetsList.filter(tweet => {
+async function tweetFilterBot(tweetList) {
+    let tweets = analyseTweet(tweetList)
+
+    function customFilter(tweetList) {
+        const filteredTweets = tweetList.filter(tweet => {
             const { text, metadata } = tweet;
             return (
                 metadata.iso_language_code === "pt" &&
@@ -49,9 +65,38 @@ async function answerTweets(tweetsList) {
             );
         });
 
+        return filteredTweets
+    }
+    async function analyseTweet(tweetList) {
+
+        const filteredTweets = customFilter(tweetList).map(async (tweet) => {
+            try {
+                const fetchWatson = await nlu.analyze(
+                    {
+                        text: tweet,
+                        features: {
+                            sentiment: {}
+                        }
+                    })
+                const { score } = fetchWatson.result.sentiment.document
+                console.log('SCORE', score)
+            } catch (e) {
+                console.error(e)
+            }
+        })
+    }
+
+    return tweets
+}
+
+
+//TWIT
+async function answerTweets(tweetsList) {
+    try {
+        const filteredTweets = await tweetFilterBot(tweetsList);
         jsonReturn = filteredTweets;
         await filteredTweets.map(async tweet => {
-            const imagePath = `./${await downloadImg()}`;
+            const imagePath = `./${await imgBot()}`;
             const b64content = fs.readFileSync(imagePath, { encoding: "base64" });
             const { user, id_str } = tweet;
             bot.post("media/upload", { media_data: b64content }, function (
@@ -65,35 +110,35 @@ async function answerTweets(tweetsList) {
                     media_id: mediaIdStr,
                     alt_text: { text: altText }
                 };
-                bot.post("media/metadata/create", meta_params, function (
-                    err,
-                    data,
-                    response
-                ) {
-                    if (!err) {
-                        const params = {
-                            status: `@${
-                                user.screen_name
-                                } ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`,
-                            media_ids: [mediaIdStr],
-                            in_reply_to_status_id: "" + id_str
-                        };
+                // bot.post("media/metadata/create", meta_params, function (
+                //     err,
+                //     data,
+                //     response
+                // ) {
+                //     if (!err) {
+                //         const params = {
+                //             status: `@${
+                //                 user.screen_name
+                //                 } ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`,
+                //             media_ids: [mediaIdStr],
+                //             in_reply_to_status_id: "" + id_str
+                //         };
 
-                        bot.post("statuses/update", params, function (
-                            err,
-                            data,
-                            response
-                        ) { });
-                        console.log(`answering tweet with id: ${id_str}`);
-                    }
-                });
+                //         bot.post("statuses/update", params, function (
+                //             err,
+                //             data,
+                //             response
+                //         ) { });
+                //         console.log(`answering tweet with id: ${id_str}`);
+                //     }
+                // });
             });
         });
     } catch (e) {
         console.error(e);
     }
 }
-
+//TEXT
 function getRandomQuote() {
     const sadQuotes = [
         //"to na bad",
@@ -105,7 +150,7 @@ function getRandomQuote() {
 
     return sadQuotes[Math.floor(Math.random() * sadQuotes.length)];
 }
-
+//TEXT
 function getRandomAnswer() {
     const happyAnswers = [
         "não fica triste!",
@@ -114,7 +159,7 @@ function getRandomAnswer() {
     ];
     return happyAnswers[Math.floor(Math.random() * happyAnswers.length)];
 }
-
+//TWIT
 async function searchTweet() {
     try {
         const now = moment().format("YYYY-MM-DD");
@@ -127,7 +172,6 @@ async function searchTweet() {
         });
         const { data } = result;
         const tweetsData = data.statuses;
-        console.log(data);
         tweetsList = tweetsData;
         jsonReturn = tweetsList;
     } catch (e) {
@@ -138,11 +182,12 @@ async function searchTweet() {
 
 async function runBot() {
     try {
-        //fs.emptyDirSync("./img/");
-        await getRandomImg();
-        await downloadImg();
+        fs.emptyDirSync("./img/");
+        //await imgBot();
         await searchTweet();
         await answerTweets(tweetsList);
+        //await customTweetListFilter();
+        //await analyseTweet()
     } catch (e) {
         console.error(e);
     }
