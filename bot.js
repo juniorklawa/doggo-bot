@@ -52,9 +52,11 @@ async function imgBot() {
 }
 
 async function tweetFilterBot(tweetList) {
+    console.log('filtering tweets...')
     let tweets = analyseTweet(tweetList)
 
     function customFilter(tweetList) {
+        console.log('applying custom filter...')
         const filteredTweets = tweetList.filter(tweet => {
             const { text, metadata } = tweet;
             return (
@@ -69,7 +71,7 @@ async function tweetFilterBot(tweetList) {
     }
 
     async function analyseTweet(tweetList) {
-
+        console.log('applying nlu filter...')
         const filteredTweets = customFilter(tweetList).filter(async (tweet) => {
             const { text } = tweet
             try {
@@ -81,7 +83,6 @@ async function tweetFilterBot(tweetList) {
                         }
                     })
                 const { score } = fetchWatson.result.sentiment.document
-                console.log('score', score)
                 return score < -0.7
             } catch (e) {
                 console.error(e)
@@ -187,11 +188,8 @@ async function searchTweet() {
 async function runBot() {
     try {
         fs.emptyDirSync("./img/");
-        //await imgBot();
         await searchTweet();
         await answerTweets(tweetsList);
-        //await customTweetListFilter();
-        //await analyseTweet()
     } catch (e) {
         console.error(e);
     }
