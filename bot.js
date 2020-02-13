@@ -1,11 +1,12 @@
 const Twit = require("twit");
 const express = require("express");
 const fs = require("fs-extra");
-const config = require("./config.js");
+const config = require("./credentials/config.js");
 const download = require("image-downloader");
 const moment = require("moment");
 const app = express();
 const watsonApiKey = require('./credentials/watson-nlu.json').apikey
+const cloudinaryConfig = require('./credentials/cloudinary.json')
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1');
 const { IamAuthenticator } = require('ibm-watson/auth');
 
@@ -18,7 +19,6 @@ const nlu = new NaturalLanguageUnderstandingV1({
 
 //@TODO decent structure
 //@TODO add node schedule
-//@TODO create a separed method that filter tweets
 //@TODO add tests
 
 const bot = new Twit(config);
@@ -28,8 +28,8 @@ let tweetsList = [];
 
 async function imgBot() {
     async function getRandomImgURL() {
-        const url = 'https://res.cloudinary.com/dlecaindb/image/upload/v1581037926/dogs/'
-        const max = 404;
+        const url = cloudinaryConfig.url
+        const max = cloudinaryConfig.max_size
         const randomNumber = Math.ceil(Math.random() * max + 1);
 
         return `${url}${randomNumber}.jpg`;
@@ -67,25 +67,29 @@ async function tweetFilterBot(tweetList) {
 
         return filteredTweets
     }
+
     async function analyseTweet(tweetList) {
 
-        const filteredTweets = customFilter(tweetList).map(async (tweet) => {
+        const filteredTweets = customFilter(tweetList).filter(async (tweet) => {
+            const { text } = tweet
             try {
                 const fetchWatson = await nlu.analyze(
                     {
-                        text: tweet,
+                        text: text,
                         features: {
                             sentiment: {}
                         }
                     })
                 const { score } = fetchWatson.result.sentiment.document
-                console.log('SCORE', score)
+                console.log('score', score)
+                return score < -0.7
             } catch (e) {
                 console.error(e)
             }
         })
-    }
+        return filteredTweets
 
+    }
     return tweets
 }
 
@@ -119,7 +123,7 @@ async function answerTweets(tweetsList) {
                 //         const params = {
                 //             status: `@${
                 //                 user.screen_name
-                //                 } ${getRandomAnswer()}, olha aqui um cachorro fofinho pra te alegrar! \n :)`,
+                //                 } ${getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
                 //             media_ids: [mediaIdStr],
                 //             in_reply_to_status_id: "" + id_str
                 //         };
@@ -141,11 +145,11 @@ async function answerTweets(tweetsList) {
 //TEXT
 function getRandomQuote() {
     const sadQuotes = [
-        //"to na bad",
+        "to na bad",
         "to triste",
         "estou triste",
         "eu to muito triste",
-        //"eu tô na bad"
+        "eu tô na bad"
     ];
 
     return sadQuotes[Math.floor(Math.random() * sadQuotes.length)];
@@ -168,7 +172,7 @@ async function searchTweet() {
         const today = moment().format("YYYY-MM-DD");
         const result = await bot.get("search/tweets", {
             q: `${randomQuote}  since:${yesterday}`,
-            count: 5
+            count: 10
         });
         const { data } = result;
         const tweetsData = data.statuses;
