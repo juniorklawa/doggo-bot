@@ -158,28 +158,28 @@ async function answerTweets(tweetsList) {
                     media_id: mediaIdStr,
                     alt_text: { text: altText }
                 };
-                // bot.post("media/metadata/create", meta_params, function (
-                //     err,
-                //     data,
-                //     response
-                // ) {
-                //     if (!err) {
-                //         const params = {
-                //             status: `@${
-                //                 user.screen_name
-                //                 } ${getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
-                //             media_ids: [mediaIdStr],
-                //             in_reply_to_status_id: "" + id_str
-                //         };
+                bot.post("media/metadata/create", meta_params, function (
+                    err,
+                    data,
+                    response
+                ) {
+                    if (!err) {
+                        const params = {
+                            status: `@${
+                                user.screen_name
+                                } ${getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
+                            media_ids: [mediaIdStr],
+                            in_reply_to_status_id: "" + id_str
+                        };
 
-                //         bot.post("statuses/update", params, function (
-                //             err,
-                //             data,
-                //             response
-                //         ) { });
-                //         console.log(`answering tweet with id: ${id_str}`);
-                //     }
-                // });
+                        bot.post("statuses/update", params, function (
+                            err,
+                            data,
+                            response
+                        ) { });
+                        console.log(`answering tweet with id: ${id_str}`);
+                    }
+                });
             });
         });
     } catch (e) {
