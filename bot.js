@@ -200,8 +200,8 @@ async function runBot() {
 
 runBot()
 
-// app.get("/tweets", (req, res) => {
-//     return res.json(jsonReturn);
-// });
+app.get("/tweets", (req, res) => {
+    return res.json(jsonReturn);
+});
 
-// app.listen(3333);
+app.listen(process.env.PORT || 3333);
