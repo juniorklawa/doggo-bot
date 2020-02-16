@@ -22,13 +22,6 @@ const nlu = new NaturalLanguageUnderstandingV1({
     url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
 });
 
-
-//@TODO increase cron time
-//@TODO add tests
-//@TODO more answers
-//@TODO more images
-//@TODO personal answer
-
 const bot = new Twit(config);
 let jsonReturn = null;
 let tweetsList = [];
