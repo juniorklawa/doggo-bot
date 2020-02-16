@@ -25,7 +25,7 @@ const nlu = new NaturalLanguageUnderstandingV1({
 
 //@TODO increase cron time
 //@TODO add tests
-//@TODO more answer
+//@TODO more answers
 
 const bot = new Twit(config);
 let jsonReturn = null;
