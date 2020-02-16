@@ -25,6 +25,8 @@ const nlu = new NaturalLanguageUnderstandingV1({
 
 //@TODO add node schedule
 //@TODO add tests
+//@TODO add more pictures
+//@TODo add more answer quotes
 
 const bot = new Twit(config);
 let jsonReturn = null;
