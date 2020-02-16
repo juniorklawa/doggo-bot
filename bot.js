@@ -23,8 +23,9 @@ const nlu = new NaturalLanguageUnderstandingV1({
 });
 
 
-//@TODO add node schedule
+//@TODO increase cron time
 //@TODO add tests
+//@TODO more answer
 
 const bot = new Twit(config);
 let jsonReturn = null;
