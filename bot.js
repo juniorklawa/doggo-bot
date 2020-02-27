@@ -78,7 +78,7 @@ async function tweetFilterBot(tweetList) {
                         }
                     })
                 const { score } = fetchWatson.result.sentiment.document
-                return score < -0.7
+                return score < -0.8
             } catch (e) {
                 console.error(e)
             }
