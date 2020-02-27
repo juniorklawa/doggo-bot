@@ -7,4 +7,3 @@ A Bot for Twitter
  - [ ] Add personal answer feature
  - [ ] Add more answer snippets
  - [ ] Decent structure
- - [ ] Increase cron frequency
