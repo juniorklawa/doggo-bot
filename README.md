@@ -7,3 +7,4 @@ A Bot for Twitter
  - [ ] Add personal answer feature
  - [ ] Add more answer snippets
  - [ ] Decent structure
+ - [ ] Add env variables
