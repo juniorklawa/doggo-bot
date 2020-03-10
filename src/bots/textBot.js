@@ -9,3 +9,12 @@ export function getRandomSnippet() {
 
   return sadQuotes[Math.floor(Math.random() * sadQuotes.length)]
 }
+
+export function getRandomAnswer() {
+  const happyAnswers = [
+    'não fica triste!',
+    'não fique assim!',
+    'vai dar tudo certo!',
+  ]
+  return happyAnswers[Math.floor(Math.random() * happyAnswers.length)]
+}
