@@ -37,9 +37,11 @@ bower_components
 build/Release
 
 # Image Folder
+img/
 
-
-credentials/
+cloudinary.json
+config.js
+watson-nlu.json
 
 # Dependency directories
 node_modules/
