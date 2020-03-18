@@ -36,13 +36,6 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
-# Image Folder
-img/
-
-cloudinary.json
-config.js
-watson-nlu.json
-
 # Dependency directories
 node_modules/
 jspm_packages/
