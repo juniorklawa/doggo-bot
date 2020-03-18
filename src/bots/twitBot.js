@@ -10,19 +10,16 @@ const bot = new Twit(config)
 export async function searchTweet() {
   console.log('searching tweets...')
   try {
-    //const now = moment().format("YYYY-MM-DD");
     const yesterday = moment()
       .subtract(1, 'days')
       .format('YYYY-MM-DD')
     const randomQuote = TextBot.getRandomSnippet()
-    //const today = moment().format("YYYY-MM-DD");
     const result = await bot.get('search/tweets', {
       q: `${randomQuote}  since:${yesterday}`,
       count: 10,
     })
     const { data } = result
     const tweetsData = data.statuses
-    console.log(tweetsData)
     return tweetsData
   } catch (e) {
     console.error(e)
@@ -36,7 +33,6 @@ export async function answerTweets(tweetsList) {
       const imagePath = `./${await ImageBot.downloadImg()}`
       const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
       const { user, id_str } = tweet
-      console.log(b64content, user, id_str)
       bot.post('media/upload', { media_data: b64content }, function(err, data) {
         const mediaIdStr = data.media_id_string
         const altText = 'A random puppy picture'
