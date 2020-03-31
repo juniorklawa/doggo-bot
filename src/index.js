@@ -1,4 +1,5 @@
 import * as TwitBot from '../src/bots/twitBot'
+import express from 'express'
 const fs = require('fs-extra')
 
 async function runMainBot() {
@@ -12,3 +13,10 @@ async function runMainBot() {
 }
 
 runMainBot()
+
+const app = express()
+app.get('/status', (req, res) => {
+  return res.json({ message: 'Running' })
+})
+
+app.listen(process.env.PORT || 3333)
