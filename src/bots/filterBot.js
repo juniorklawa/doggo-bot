@@ -1,10 +1,11 @@
-const watsonApiKey = require('../../credentials/watson-nlu.json').apikey
+import 'dotenv/config'
 
+// const watsonApiKey = require('../../credentials/watson-nlu.json').apikey
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1')
 const { IamAuthenticator } = require('ibm-watson/auth')
 
 const nlu = new NaturalLanguageUnderstandingV1({
-  authenticator: new IamAuthenticator({ apikey: watsonApiKey }),
+  authenticator: new IamAuthenticator({ apikey: process.env.WATSON_API_KEY }),
   version: '2018-04-05',
   url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/',
 })

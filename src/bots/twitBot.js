@@ -35,7 +35,7 @@ export async function answerTweets(tweetsList) {
       const { user, id_str } = tweet
       bot.post('media/upload', { media_data: b64content }, function(err, data) {
         const mediaIdStr = data.media_id_string
-        const altText = 'A random puppy picture'
+        const altText = 'A random cute puppy picture'
         const meta_params = {
           media_id: mediaIdStr,
           alt_text: { text: altText },

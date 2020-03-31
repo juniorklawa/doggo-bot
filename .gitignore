@@ -5,9 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-config.js
-credentials/config.js
-credentials/cloudinary.js
+
 
 # Runtime data
 pids
@@ -35,11 +33,6 @@ bower_components
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
-
-# Image Folder
-
-
-credentials/
 
 # Dependency directories
 node_modules/

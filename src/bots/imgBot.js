@@ -1,12 +1,11 @@
+import 'dotenv/config'
+
 const download = require('image-downloader')
-const cloudinaryConfig = require('../../credentials/cloudinary.json')
 
 async function getRandomImgURL() {
-  const url = cloudinaryConfig.url
-  const max = cloudinaryConfig.max_size
-  const randomNumber = Math.ceil(Math.random() * max + 1)
+  const randomNumber = Math.ceil(Math.random() * process.env.MAX + 1)
 
-  return `${url}${randomNumber}.jpg`
+  return `${process.env.CLOUDINARY_URL}${randomNumber}.jpg`
 }
 
 export async function downloadImg() {

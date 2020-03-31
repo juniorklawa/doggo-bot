@@ -1,10 +1,9 @@
 import * as TwitBot from '../src/bots/twitBot'
-
-// const express = require('express')
-// const app = express()
+import express from 'express'
+const app = express()
 const fs = require('fs-extra')
 
-async function runBot() {
+async function runMainBot() {
   try {
     fs.emptyDirSync('./img/')
     const tweetsList = await TwitBot.searchTweet()
@@ -14,10 +13,10 @@ async function runBot() {
   }
 }
 
-runBot()
-//TODO DASHBOARD
-// app.get('/tweets', (req, res) => {
-//   return res.json(jsonReturn)
-// })
+//@TODO FIX THIS
+runMainBot()
+app.get('/tweets', (req, res) => {
+  return res.json({ status: 'Running!' })
+})
 
-// app.listen(process.env.PORT || 3333)
+app.listen(process.env.PORT || 3333)
