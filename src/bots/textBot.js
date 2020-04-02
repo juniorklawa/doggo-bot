@@ -2,7 +2,6 @@ export function getRandomSnippet() {
   const sadQuotes = [
     'to na bad',
     'to triste',
-    'minha vida é uma droga',
     'estou triste',
     'eu to muito triste',
     'eu tô na bad',
