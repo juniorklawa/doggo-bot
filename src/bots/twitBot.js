@@ -44,7 +44,6 @@ export async function answerTweets(tweetsList) {
       const isTweetAlreadyAnswered = await Tweet.findOne({
         tweetId: id_str,
       })
-
       if (!isTweetAlreadyAnswered) {
         bot.post('media/upload', { media_data: b64content }, function(
           err,
