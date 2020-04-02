@@ -1,12 +1,19 @@
+import 'dotenv/config'
 import moment from 'moment'
 import * as TextBot from '../bots/textBot'
 import * as FilterBot from '../bots/filterBot'
 import * as ImageBot from '../bots/imgBot'
+const Tweet = require('../models/Tweet')
+const mongoose = require('mongoose')
 const Twit = require('twit')
 const fs = require('fs-extra')
 const config = require('../../credentials/config')
 
 const bot = new Twit(config)
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
 export async function searchTweet() {
   console.log('searching tweets...')
   try {
@@ -33,28 +40,41 @@ export async function answerTweets(tweetsList) {
       const imagePath = `./${await ImageBot.downloadImg()}`
       const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
       const { user, id_str } = tweet
-      bot.post('media/upload', { media_data: b64content }, function(err, data) {
-        const mediaIdStr = data.media_id_string
-        const altText = 'A random cute puppy picture'
-        const meta_params = {
-          media_id: mediaIdStr,
-          alt_text: { text: altText },
-        }
-        bot.post('media/metadata/create', meta_params, function(err) {
-          if (!err) {
-            const params = {
-              status: `@${
-                user.screen_name
-              } ${TextBot.getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
-              media_ids: [mediaIdStr],
-              in_reply_to_status_id: '' + id_str,
-            }
 
-            bot.post('statuses/update', params, function() {})
-            console.log(`answering tweet with id: ${id_str}`)
-          }
-        })
+      const isTweetAlreadyAnswered = await Tweet.findOne({
+        tweetId: id_str,
       })
+      if (!isTweetAlreadyAnswered) {
+        bot.post('media/upload', { media_data: b64content }, function(
+          err,
+          data
+        ) {
+          const mediaIdStr = data.media_id_string
+          const altText = 'A random cute puppy picture'
+          const meta_params = {
+            media_id: mediaIdStr,
+            alt_text: { text: altText },
+          }
+          bot.post('media/metadata/create', meta_params, async function(err) {
+            if (!err) {
+              const params = {
+                status: `@${
+                  user.screen_name
+                } ${TextBot.getRandomAnswer()} olha aqui um cachorro fofinho pra te alegrar! \n :)`,
+                media_ids: [mediaIdStr],
+                in_reply_to_status_id: '' + id_str,
+              }
+
+              bot.post('statuses/update', params, function() {})
+              console.log(`answering tweet with id: ${id_str}`)
+
+              await Tweet.create({
+                tweetId: id_str,
+              })
+            }
+          })
+        })
+      }
     })
   } catch (e) {
     console.error(e)
