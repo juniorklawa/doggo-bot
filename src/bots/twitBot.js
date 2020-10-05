@@ -36,6 +36,7 @@ export async function searchTweet() {
 export async function answerTweets(tweetsList) {
   try {
     const filteredTweets = await FilterBot.tweetFilterBot(tweetsList)
+
     await filteredTweets.map(async tweet => {
       const imagePath = `./${await ImageBot.downloadImg()}`
       const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
@@ -44,6 +45,7 @@ export async function answerTweets(tweetsList) {
       const isTweetAlreadyAnswered = await Tweet.findOne({
         tweetId: id_str,
       })
+
       if (!isTweetAlreadyAnswered) {
         bot.post('media/upload', { media_data: b64content }, function(
           err,
@@ -55,6 +57,7 @@ export async function answerTweets(tweetsList) {
             media_id: mediaIdStr,
             alt_text: { text: altText },
           }
+
           bot.post('media/metadata/create', meta_params, async function(err) {
             if (!err) {
               const params = {
