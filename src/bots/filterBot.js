@@ -23,7 +23,7 @@ export async function tweetFilterBot(tweetList) {
         !text.includes('Cachorro')
       )
     })
-    return filteredTweets
+    return filteredTweets.slice(0, 10)
   }
 
   async function analyseTweet(tweetList) {
