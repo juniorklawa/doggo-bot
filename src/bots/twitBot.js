@@ -40,7 +40,6 @@ export async function answerTweets(tweetsList) {
     await filteredTweets.map(async tweet => {
       const imagePath = `./${await ImageBot.downloadImg()}`
       const b64content = fs.readFileSync(imagePath, { encoding: 'base64' })
-      console.log(b64content)
       const { user, id_str } = tweet
 
       const isTweetAlreadyAnswered = await Tweet.findOne({
@@ -58,8 +57,6 @@ export async function answerTweets(tweetsList) {
             media_id: mediaIdStr,
             alt_text: { text: altText },
           }
-
-          console.log(data)
 
           bot.post('media/metadata/create', meta_params, async function(err) {
             if (!err) {
